@@ -453,6 +453,10 @@ class WidgetGenerator(ABC):
         if has_entry:
             combobox = Gtk.ComboBox.new_with_model_and_entry(liststore)
             combobox.set_entry_text_column(0)
+            # Make it read-only but allow focus for selection/copying
+            entry = combobox.get_child()
+            entry.set_editable(False)
+            entry.set_can_focus(True)
         # No entry ("choice" type)
         else:
             combobox = Gtk.ComboBox.new_with_model(liststore)
