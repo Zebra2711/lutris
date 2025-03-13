@@ -50,6 +50,22 @@ class DLLManager:
                 if os.path.isdir(os.path.join(self.base_dir, local_version)) and local_version not in self._versions:
                     self._versions.append(local_version)
 
+        # Just test for now
+        path = proton.get_proton_wine_path("GE-Proton9-26")
+        path = os.path.dirname(os.path.dirname(path))
+        dxvk_path = os.path.join(path, "lib64/wine/dxvk/version")
+        try:
+            result = subprocess.run(
+                f"awk '/dxvk/ {{print $3}}' {dxvk_path} | sed 's/(//;s/)//'",
+                shell=True, capture_output=True, text=True, check=True
+            )
+            dxvk_version = result.stdout.strip()
+            print(f"ver: {dxvk_version}")
+            if dxvk_version:
+                self._versions.append(dxvk_version)
+        except subprocess.CalledProcessError as e:
+            print(f"Error reading DXVK version: {e}")
+
         def parse_version(v):
             import re
             """Extract numerical parts and text components for sorting."""
