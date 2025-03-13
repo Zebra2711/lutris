@@ -13,7 +13,8 @@ from lutris.util.http import download_file
 from lutris.util.log import logger
 from lutris.util.strings import parse_version
 from lutris.util.wine.prefix import WinePrefixManager
-
+from lutris.util.wine import proton, wine
+import subprocess
 
 class DLLManager:
     """Utility class to install dlls to a Wine prefix"""
@@ -48,6 +49,25 @@ class DLLManager:
             for local_version in os.listdir(self.base_dir):
                 if os.path.isdir(os.path.join(self.base_dir, local_version)) and local_version not in self._versions:
                     self._versions.append(local_version)
+
+        def parse_version(v):
+            import re
+            """Extract numerical parts and text components for sorting."""
+            # Extract the numeric version and any suffix
+            match = re.search(r'(\d+(?:\.\d+)*)(?:[- ](.*))?', v)
+            if match:
+                main_version = match.group(1)  # Numeric part (e.g., "0.8.4")
+                suffix = match.group(2) or ""  # Anything after "-" or " " (e.g., "g8a6a0590", "Proton")
+
+                # Convert numeric parts to integers for proper sorting
+                parsed_main = [int(x) for x in main_version.split(".")]
+
+                return (parsed_main, suffix)
+
+            # If no numeric version is found, keep the string for fallback sorting
+            return ([-1], v)  # Non-versioned names get sorted last
+
+        self._versions = sorted(self._versions, key=parse_version, reverse=True)
         return self._versions
 
     @property
@@ -57,13 +77,11 @@ class DLLManager:
             return self._version
         versions = self.versions
         if versions:
-
             def get_preference_key(v):
                 return not self.is_compatible_version(v), not self.is_recommended_version(v)
-
-            # Put the compatible versions first, and the recommended ones before unrecommended ones.
-            sorted_versions = sorted(versions, key=get_preference_key)
-            return sorted_versions[0]
+        # Put the compatible versions first, and the recommended ones before unrecommended ones.
+        sorted_versions = sorted(versions, key=get_preference_key)
+        return sorted_versions[0]
 
     def is_recommended_version(self, version):
         """True if the version given should be usable as the default; false if it
