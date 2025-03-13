@@ -86,19 +86,21 @@ class LogWindow(GObject.Object):
         if size > 6:  # Minimum size
             self.logtextview.override_font(Pango.FontDescription(f"monospace {size - 1}"))
 
-    def on_scroll_event(self, widget, event):
+    def on_scroll_event(self, widget: Gtk.Widget, event: Gdk.EventScroll) -> bool:
         """Handle Ctrl+scroll to zoom text"""
-        ctrl_pressed = event.state & Gdk.ModifierType.CONTROL_MASK
+        if not event.state & Gdk.ModifierType.CONTROL_MASK:
+            return False
 
-        if ctrl_pressed:
-            change = 0
-            font = self.logtextview.get_style_context().get_font(Gtk.StateFlags.NORMAL)
-            size = font.get_size() / Pango.SCALE
-            if event.direction == Gdk.ScrollDirection.UP:
-                if size < 48:  # Maximum size
-                    change = 1
-            elif event.direction == Gdk.ScrollDirection.DOWN:
-                if size > 6:
-                    change = -1
-            self.logtextview.override_font(Pango.FontDescription(f"monospace {size + change}"))
-        return
+        font = self.logtextview.get_style_context().get_font(Gtk.StateFlags.NORMAL)
+        size = font.get_size() // Pango.SCALE
+        if event.direction == Gdk.ScrollDirection.UP and size < 48:
+            new_size = size + 1
+        elif event.direction == Gdk.ScrollDirection.DOWN and size > 6:
+            new_size = size - 1
+        else:
+            return False
+        font_desc = Pango.FontDescription()
+        font_desc.set_family("monospace")
+        font_desc.set_size(new_size * Pango.SCALE)
+        self.logtextview.override_font(font_desc)
+        return True
