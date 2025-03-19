@@ -679,6 +679,7 @@ class wine(Runner):
             ("wine-regedit", _("Wine registry"), self.run_regedit),
             ("winecpl", _("Wine Control Panel"), self.run_winecpl),
             ("winetaskmgr", _("Wine Task Manager"), self.run_taskmgr),
+            ("wineexplorer", _("Wine Explorer"), self.run_explorer),
             (None, "-", None),
             ("winetricks", _("Winetricks"), self.run_winetricks),
         ]
@@ -956,6 +957,11 @@ class wine(Runner):
         """Runs wineconsole inside wine prefix."""
         self.prelaunch()
         self._run_executable("wineconsole")
+
+    def run_explorer(self, *args):
+        """Runs wine explorer inside wine prefix."""
+        self.prelaunch()
+        self._run_executable("explorer")
 
     def run_winecfg(self, *args):
         """Run winecfg in the current context"""
