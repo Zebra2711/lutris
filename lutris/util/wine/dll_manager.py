@@ -205,6 +205,12 @@ class DLLManager:
                     shutil.move(wine_dll_path, wine_dll_path + ".orig")
                 else:
                     os.remove(wine_dll_path)
+            # TODO: copy intead create symlink for wineprefix
+            #       in filesystems that not suport symlink
+            # NO_SYMLINK_FSTYPES = {
+            #     "fat", "vfat", "exfat", "iso9660", "udf", "cifs", "smbfs",
+            #     "jffs2", "yaffs", "f2fs", "hpfs", "ntfs", "reiserfs", "fuseblk"
+            # }
             system.create_symlink(dll_path, wine_dll_path)
         else:
             self.disable_dll(system_dir, arch, dll)
