@@ -3,6 +3,7 @@
 # pylint: disable=too-many-lines
 import os
 import shlex
+from subprocess import run as Command
 from gettext import gettext as _
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Callable
 
@@ -46,7 +47,6 @@ from lutris.util.wine.d3d_extras import D3DExtrasManager
 from lutris.util.wine.dgvoodoo2 import dgvoodoo2Manager
 from lutris.util.wine.dxvk import REQUIRED_VULKAN_API_VERSION, DXVKManager
 from lutris.util.wine.dxvk_nvapi import DXVKNVAPIManager
-from lutris.util.wine.extract_icon import PEFILE_AVAILABLE, ExtractIcon
 from lutris.util.wine.prefix import DEFAULT_DLL_OVERRIDES, WinePrefixManager, find_prefix
 from lutris.util.wine.vkd3d import VKD3DManager
 from lutris.util.wine.wine import (
@@ -1368,35 +1368,29 @@ class wine(Runner):
         returns true if an icon is saved, false if not"""
 
         try:
-            wantedsize = (128, 128)
             pathtoicon = settings.ICON_PATH + "/lutris_" + game_slug + ".png"
             exe = self.game_exe
-            if not exe or os.path.exists(pathtoicon) or not PEFILE_AVAILABLE:
+            icon_exists = os.path.exists(pathtoicon)
+            if not exe or icon_exists:
                 return False
-
-            extractor = ExtractIcon(self.game_exe)
-            groups = extractor.get_group_icons()
-
-            if not groups:
-                return False
-
-            icons = []
-            biggestsize = (0, 0)
-            biggesticon = -1
-            for i in range(len(groups[0])):
-                icons.append(extractor.export(groups[0], i))
-                if icons[i].size > biggestsize:
-                    biggesticon = i
-                    biggestsize = icons[i].size
-                elif icons[i].size == wantedsize:
-                    icons[i].save(pathtoicon)
-                    return True
-
-            if biggesticon >= 0:
-                resized = icons[biggesticon].resize(wantedsize)
-                resized.save(pathtoicon)
+            out = Command(
+                [
+                    "wrestool",
+                    "-x",
+                    "-t14",
+                    "--first",
+                    f"--output={settings.ICON_PATH}/lutris_{game_slug}.png",
+                    f"{str(exe)}",
+                ],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            if not out.stderr:
                 return True
-            return False
+            raise Exception("wrestool: NO_FILES_EXTRACTED")
+        except FileNotFoundError:
+            raise Exception("wrestool command not found")
         except Exception as ex:
             logger.exception("Unable to extract icon from %s: %s", exe, ex)
             return False
