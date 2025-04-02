@@ -4,6 +4,7 @@
 import os
 import shlex
 import time
+import subprocess
 
 from lutris import runtime, settings
 from lutris.monitored_command import MonitoredCommand
@@ -94,6 +95,42 @@ def delete_registry_key(key, wine_path=None, prefix=None, arch=WINE_DEFAULT_ARCH
     )
 
 
+def in_not_allow_file_system(prefix):
+    """
+    Check prefix is create in file system that not support to create linux symlink
+
+    Returns:
+        bool: True if the prefix is on a disallowed filesystem or if the filesystem
+              type cannot be determined, False otherwise.
+    """
+
+    # Need add more if needed
+    disallowed_fs_types = ["exfat", "fuseblk", "fat", "vfat", "msdos", "umsdos", "ncpfs", "iso9660"]
+
+    if not os.path.exists(prefix):
+        prefix = os.path.dirname(prefix)
+    try:
+        result = subprocess.run(
+            ["df", "-PTh", prefix],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+        fs_type = result.stdout.strip().split("\n")[1].split()[1].lower()
+
+        if fs_type:
+            logger.info("Creating a prefix in file system type: %s", fs_type)
+
+        if fs_type not in disallowed_fs_types:
+            return False
+        return True
+    except (subprocess.TimeoutExpired, subprocess.SubprocessError) as e:
+        logger.warning("Check file system type of prefix failed")
+        # If check fs_type fails, then just take the risk and create prefix
+        return False
+
+
 def create_prefix(
     prefix, wine_path=None, arch=WINE_DEFAULT_ARCH, overrides=None, install_gecko=None, install_mono=None, runner=None
 ):
@@ -117,6 +154,15 @@ def create_prefix(
             os.rmdir(prefix)
         except OSError:
             logger.error("Failed to delete %s, you may lack permissions on this folder.", prefix)
+
+    # Wine does not allow creating a prefix in a parent directory that does not
+    # exist. For example, if the prefix is /mnt/a/b/c/d but the parent directory
+    # /mnt/a/b/c does not exist, it is not allowed.
+    if not os.path.exists(os.path.dirname(prefix)):
+        raise Exception("Can't create prefix: Not found directory %s" % os.path.dirname(prefix))
+
+    if in_not_allow_file_system(prefix):
+        raise Exception("Can't create prefix on file system that not support linux symlink")
 
     if not wine_path:
         if not runner:
