@@ -35,6 +35,7 @@ gi.require_version("Gtk", "3.0")
 
 from gi.repository import Gio, GLib, Gtk
 
+from lutris.version import VERSION, HASH, MESSAGE
 from lutris import settings
 from lutris.api import get_runners, parse_installer_url
 from lutris.database import games as games_db
@@ -477,7 +478,7 @@ class Application(Gtk.Application):
         if options.contains("force"):
             self.force_updates = True
 
-        logger.info("Starting Lutris %s", settings.VERSION)
+        logger.info("Starting Lutris %s, Commit: %s ( %s )", VERSION, HASH, MESSAGE)
         init_lutris()
         migrate()
 
