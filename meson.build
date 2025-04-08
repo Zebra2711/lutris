@@ -4,6 +4,8 @@ project(
   meson_version: '>=0.46.0',
 )
 
+run_command('sh', 'version.sh')
+
 # Find Python installation
 python = import('python').find_installation()
 
