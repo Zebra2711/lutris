@@ -205,7 +205,13 @@ class DLLManager:
                     shutil.move(wine_dll_path, wine_dll_path + ".orig")
                 else:
                     os.remove(wine_dll_path)
-            system.create_symlink(dll_path, wine_dll_path)
+
+            # wine-nvml not work when used as symlink in prefix
+            if dll == "nvml.dll" and os.path.islink(dll_path):
+                dll_path = os.readlink(dll_path)
+                shutil.copy(dll_path, wine_dll_path)
+            else:
+                system.create_symlink(dll_path, wine_dll_path)
         else:
             self.disable_dll(system_dir, arch, dll)
 
