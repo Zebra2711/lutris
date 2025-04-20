@@ -14,7 +14,6 @@ class DXVKNVAPIManager(DLLManager):
     managed_dlls = (
         "nvapi",
         "nvapi64",
-        "nvml",
         "nvofapi64",
         "nvoptix",
         "nvencodeapi",
