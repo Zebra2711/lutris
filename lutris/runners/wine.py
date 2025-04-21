@@ -612,6 +612,7 @@ class wine(Runner):
     def context_menu_entries(self):
         """Return the contexual menu entries for wine"""
         return [
+            ("winekill", _("Kill all Wine processes"), self.run_winekill),
             ("wineexec", _("Run EXE inside Wine prefix"), self.run_wineexec),
             ("wineshell", _("Open Bash terminal"), self.run_wine_terminal),
             ("wineconsole", _("Open Wine console"), self.run_wineconsole),
