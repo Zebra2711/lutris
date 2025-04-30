@@ -5,6 +5,7 @@ import time
 from typing import Any
 
 import requests
+import certifi
 
 from lutris import __version__
 from lutris.util import jobs
@@ -131,7 +132,9 @@ class Downloader:
             headers["User-Agent"] = "Lutris/%s" % __version__
             if self.referer:
                 headers["Referer"] = self.referer
-            response = requests.get(self.url, headers=headers, stream=True, timeout=30, cookies=self.cookies)
+            response = requests.get(
+                self.url, headers=headers, stream=True, timeout=30, cookies=self.cookies, verify=certifi.where()
+            )
             if response.status_code != 200:
                 logger.info("%s returned a %s error", self.url, response.status_code)
             response.raise_for_status()
