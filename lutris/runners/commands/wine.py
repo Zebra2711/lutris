@@ -105,15 +105,16 @@ def is_disallowed_fs(prefix):
 
     # Need add more if needed
     disallowed_fs_types = {"exfat", "fat", "vfat", "msdos", "umsdos", "ncpfs", "iso9660"}
-
-    if not os.path.exists(prefix):
-        prefix = os.path.dirname(prefix)
-
-    fs_type = linux.LinuxSystem().get_fs_type_for_path(prefix)
-    if fs_type is None:
-        return True
-    logger.info("Creating a prefix in file system type: %s", fs_type)
-    return fs_type in disallowed_fs_types
+    try:
+        if not os.path.exists(prefix):
+            prefix = os.path.dirname(prefix)
+        fs_type = linux.LinuxSystem().get_fs_type_for_path(prefix)
+        if fs_type is None:
+            return True
+        logger.info("Creating a prefix in file system type: %s", fs_type)
+        return fs_type in disallowed_fs_types
+    except:
+        return False
 
 
 def create_prefix(
