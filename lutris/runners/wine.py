@@ -1388,8 +1388,7 @@ class wine(Runner):
 
             extractor = IconExtractor(exe)
 
-            # Get first icon by default
-            icon = extractor.get_icon()
+            icon = extractor.get_best_icon()
 
             if not icon.size == wantedsize:
                 icon = icon.resize(wantedsize)
