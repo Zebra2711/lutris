@@ -263,9 +263,6 @@ def winekill(prefix, arch=WINE_DEFAULT_ARCH, wine_path=None, env=None, initial_p
 
         if num_cycles > 20:
             logger.warning("Some wine processes are still running: %s", running_processes)
-            break
-
-        if num_cycles > 35:
             logger.warning("Wine processes running too long — force killing: %s", running_processes)
             command = [os.path.join(wine_root, "wineboot"), "-k"]
             logger.debug(command)

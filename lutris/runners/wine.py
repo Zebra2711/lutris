@@ -1152,15 +1152,29 @@ class wine(Runner):
         env = super().get_env(os_env, disable_runtime=disable_runtime)
         show_debug = self.runner_config.get("show_debug", "-all")
         if show_debug != "inherit":
+            # For performance, logging is disabled by default;
             env["WINEDEBUG"] = show_debug
-            env["DXVK_LOG_LEVEL"] = "error"
-            env["UMU_LOG"] = "1"
+            env["DXVK_LOG_LEVEL"] = "none"
+            env["UMU_LOG"] = "0"
+            env["VKD3D_DEBUG"] = "none"
+            env["VKD3D_SHADER_DEBUG"] = "none"
+            env["DXVK_NVAPI_LOG_LEVEL"] = "none"
+            env["DXVK_NVAPI_VKREFLEX_LAYER_LOG_LEVEL"] = "none"
+
             if show_debug == "":
                 env["DXVK_LOG_LEVEL"] = "info"
-                env["UMU_LOG"] = "warning"
+                env["VKD3D_DEBUG"] = "info"
+                env["UMU_LOG"] = "1"
+                env["DXVK_NVAPI_LOG_LEVEL"] = "info"
+                env["DXVK_NVAPI_VKREFLEX_LAYER_LOG_LEVEL"] = "info"
             elif show_debug == "+all":
                 env["DXVK_LOG_LEVEL"] = "debug"
+                env["VKD3D_DEBUG"] = "debug"
                 env["UMU_LOG"] = "debug"
+                env["DXVK_LOG_LEVEL"] = "debug"
+                env["DXVK_NVAPI_LOG_LEVEL"] = "trace"
+                env["DXVK_NVAPI_VKREFLEX_LAYER_LOG_LEVEL"] = "debug"
+
         env["WINEARCH"] = self.wine_arch
         wine_exe = self.get_executable()
         is_proton = proton.is_proton_path(wine_exe)
