@@ -19,6 +19,9 @@ tests/coverage/*
 /flake.nix
 /flake.lock
 
+# version generate file
+lutris/version.py
+
 # meson builddirs
 builddir
 
