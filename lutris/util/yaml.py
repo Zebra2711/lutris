@@ -24,7 +24,10 @@ def read_yaml_from_file(filename: str) -> dict:
     return yaml_content
 
 
-def write_yaml_to_file(config: dict, filepath: str) -> None:
+def write_yaml_to_file(config: dict, filepath: str | None) -> None:
+    if not filepath:
+        logger.error("filepath is None")
+        return
     yaml_config = yaml.safe_dump(config, default_flow_style=False)
 
     temp_path = filepath + ".tmp"

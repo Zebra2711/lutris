@@ -279,7 +279,7 @@ class DisplayManager:
                     return False
 
                 # Format: keyword arg=value
-                cmd = [self.hyprctl_path, "keyword", f"monitor,{monitor},preferred,auto,{float(width)/float(height)}"]
+                cmd = [self.hyprctl_path, "keyword", f"monitor,{monitor},preferred,auto,{float(width) / float(height)}"]
                 subprocess.run(cmd, check=True)
                 return True
             except (ValueError, subprocess.SubprocessError) as ex:

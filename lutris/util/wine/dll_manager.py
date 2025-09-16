@@ -316,7 +316,30 @@ class DLLManager:
         """Get releases from GitHub"""
         if not os.path.isdir(self.base_dir):
             os.mkdir(self.base_dir)
-        download_file(self.releases_url, self.versions_path, overwrite=True)
+
+        versions = []
+        urls = [self.releases_url] if isinstance(self.releases_url, str) else self.releases_url
+        for url in urls:
+            temp_path = os.path.join("/tmp/", f"{self.name}_versions.json")
+            logger.info("Fetching versions from %s", url)
+            try:
+                download_file(url, temp_path, overwrite=True)
+                with open(temp_path, "r", encoding="utf-8") as version_file:
+                    releases = json.load(version_file)
+                    versions.extend(releases)
+            except Exception as e:
+                logger.warning("Failed to fetch versions from %s: %s", url, e)
+            finally:
+                if os.path.exists(temp_path):
+                    os.remove(temp_path)
+        # TODO: add <version> (<repo>) for detail of repo (lutris, sarek,..)
+        # Remove duplicates based on tag_name and sort by tag_name
+        unique_versions = {v["tag_name"]: v for v in versions}
+        versions = list(unique_versions.values())
+        versions.sort(key=lambda x: x["tag_name"], reverse=True)
+
+        with open(self.versions_path, "w", encoding="utf-8") as version_file:
+            json.dump(versions, version_file, indent=2)
 
     def upgrade(self):
         if not self.is_available():
