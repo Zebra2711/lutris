@@ -15,7 +15,7 @@ class DXVKManager(DLLManager):
     managed_dlls = ("dxgi", "d3d11", "d3d10core", "d3d9", "d3d8")
     releases_url = [
         "https://api.github.com/repos/lutris/dxvk/releases",
-        "https://api.github.com/repos/pythonlover02/DXVK-Sarek/releases"
+        "https://api.github.com/repos/pythonlover02/DXVK-Sarek/releases",
     ]
 
     def can_enable(self):

@@ -79,5 +79,8 @@ class LogWindow(GObject.Object):
             new_size = size - 1
         else:
             return False
-        self.logtextview.override_font(Pango.FontDescription(f"monospace {new_size}"))
+        font_desc = Pango.FontDescription()
+        font_desc.set_family("monospace")
+        font_desc.set_size(new_size * Pango.SCALE)
+        self.logtextview.override_font(font_desc)
         return True
