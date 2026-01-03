@@ -40,6 +40,12 @@ class LogWindow(GObject.Object):
         self.window.add_events(Gdk.EventMask.SCROLL_MASK)
         self.window.connect("scroll-event", self.on_scroll_event)
 
+        # Add zoom buttons
+        zoom_in_button = builder.get_object("zoom_in_button")
+        zoom_out_button = builder.get_object("zoom_out_button")
+        zoom_in_button.connect("clicked", self.on_zoom_in_clicked)
+        zoom_out_button.connect("clicked", self.on_zoom_out_clicked)
+
         self.window.connect("key-press-event", self.on_key_press_event)
         self.window.show_all()
 
@@ -84,3 +90,17 @@ class LogWindow(GObject.Object):
         font_desc.set_size(new_size * Pango.SCALE)
         self.logtextview.override_font(font_desc)
         return True
+
+    def on_zoom_in_clicked(self, _button):
+        """Increase font size"""
+        font = self.logtextview.get_style_context().get_font(Gtk.StateFlags.NORMAL)
+        size = font.get_size() / Pango.SCALE
+        if size < 48:  # Maximum size
+            self.logtextview.override_font(Pango.FontDescription(f"monospace {size + 1}"))
+
+    def on_zoom_out_clicked(self, _button):
+        """Decrease font size"""
+        font = self.logtextview.get_style_context().get_font(Gtk.StateFlags.NORMAL)
+        size = font.get_size() / Pango.SCALE
+        if size > 6:  # Minimum size
+            self.logtextview.override_font(Pango.FontDescription(f"monospace {size - 1}"))
