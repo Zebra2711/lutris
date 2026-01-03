@@ -3,7 +3,7 @@ import re
 import shutil
 import subprocess
 import tempfile
-import defusedxml.ElementTree
+import xml.etree.ElementTree
 
 from lutris.util.log import logger
 from lutris.util.system import execute, read_process_output
@@ -117,7 +117,7 @@ class CabInstaller:
 
     def get_registry_from_manifest(self, file_name):
         out = ""
-        root = defusedxml.ElementTree.parse(file_name).getroot()
+        root = xml.etree.ElementTree.parse(file_name).getroot()
         arch = self.get_arch_from_manifest(root)
         registry_keys = root.findall("{urn:schemas-microsoft-com:asm.v3}registryKeys")
         if registry_keys:

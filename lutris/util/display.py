@@ -344,13 +344,14 @@ def get_display_manager():
     else:
         logger.error("DBus is not available, Lutris was not properly installed.")
 
-    # For GNOME Desktop or other backends
-    try:
-        screen = Gdk.Screen.get_default()
-        return DisplayManager(screen)
-    except Exception as ex:  # pylint: disable=broad-except
-        logger.exception("Failed to instantiate DisplayManager: %s", ex)
-        return LegacyDisplayManager()
+    if LIB_GNOME_DESKTOP_AVAILABLE:
+        try:
+            screen = Gdk.Screen.get_default()
+            if screen:
+                return DisplayManager(screen)
+        except GLib.Error:
+            pass
+    return LegacyDisplayManager()
 
 
 DISPLAY_MANAGER = get_display_manager()
@@ -537,8 +538,8 @@ def _run_command(*command, run_in_background=False):
     are you lost little _run_command?
     """
     try:
-        if not command:
-            raise ValueError("No command provided")
+        if run_in_background:
+            command = " ".join(command)
         return subprocess.Popen(  # pylint: disable=consider-using-with
             command,
             stdin=subprocess.DEVNULL,
@@ -549,7 +550,6 @@ def _run_command(*command, run_in_background=False):
     except FileNotFoundError:
         errorMessage = "FileNotFoundError when running command:", command
         logger.error(errorMessage)
-        return None
 
 
 def disable_compositing():

@@ -33,12 +33,26 @@ class WebConnectDialog(ModalDialog):
 
         service.is_login_in_progress = True
 
-        self.context = WebKit2.WebContext.new()
-        webview_locales = {"en_US"}  # Initialize with fallback locale
-        for get_locale in [LutrisConfig().system_config.get("locale"), os.getenv("LANG")]:
-            if get_locale and (_locale := get_locale.split(".")[0]):
-                webview_locales.add(_locale)
-        self.context.set_preferred_languages(list(webview_locales))
+        self.context: WebKit2.WebContext = WebKit2.WebContext.new()
+
+        # Set locale
+        # Locale fallback routine:
+        # Lutris locale -> System environment locale -> US English
+        webview_locales = ["en_US"]
+        lutris_config = LutrisConfig()
+        environment_locale_lang = os.environ.get("LANG")
+        if environment_locale_lang:
+            webview_locales = [environment_locale_lang.split(".")[0]] + webview_locales
+        lutris_locale = lutris_config.system_config.get("locale")
+        if lutris_locale:
+            webview_locales = [lutris_locale.split(".")[0]] + webview_locales
+        logger.debug(
+            f"Webview locale fallback order: "
+            f"[Lutris locale]: '{lutris_locale}' -> "
+            f"[env: LANG]: '{environment_locale_lang}' -> "
+            f"[Default]: '{webview_locales[-1]}'"
+        )
+        self.context.set_preferred_languages(webview_locales)
 
         if "http_proxy" in os.environ:
             proxy = WebKit2.NetworkProxySettings.new(os.environ["http_proxy"])
