@@ -163,10 +163,10 @@ class LinuxSystem:  # pylint: disable=too-many-public-methods
     @staticmethod
     def get_drives():
         """Return a list of drives with their filesystems"""
-        lsblk_output = system.read_process_output(["lsblk", "-f", "--json"])
-        if not lsblk_output:
+        findmnt_output = system.read_process_output(["findmnt", "-J", "--list"])
+        if not findmnt_output:
             return []
-        return [drive for drive in json.loads(lsblk_output)["blockdevices"] if drive["fstype"] != "squashfs"]
+        return [drive for drive in json.loads(findmnt_output)["filesystems"] if drive["fstype"] != "squashfs"]
 
     @staticmethod
     def get_ram_info():
@@ -274,8 +274,12 @@ class LinuxSystem:  # pylint: disable=too-many-public-methods
         while devices:
             device = devices.pop()
             devices.extend(device.get("children", []))
-            if mount_point in device.get("mountpoints", []) or mount_point == device.get("mountpoint"):
-                return device["fstype"]
+            if mount_point == device.get("target"):
+                fs_type = device["fstype"]
+                if fs_type == "fuseblk":
+                    out = system.read_process_output(["blkid", "-o", "value", "-s", "TYPE", device["source"]])
+                    fs_type = out.strip() if out else fs_type
+                return cast(str, fs_type)
         return None
 
     def get_glxinfo(self):
