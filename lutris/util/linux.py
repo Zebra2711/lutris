@@ -9,6 +9,7 @@ import shutil
 import sys
 from collections import Counter, defaultdict
 from gettext import gettext as _
+from typing import Any, cast
 
 from lutris import settings
 from lutris.exceptions import MisconfigurationError
